@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 import sqlite3
 
 app = FastAPI()
@@ -12,7 +13,7 @@ def get_db_cursor():
 
 @app.get("/")
 def main():
-    return ("Hello World")
+    return FileResponse("index.html")
 
 
 @app.get("/encode/{text}")
@@ -71,3 +72,13 @@ def get_history():
     all_data = cursor.fetchall()
     connect.close()
     return {"All Data": all_data}
+
+
+@app.delete("/clear")
+def wipe_databse():
+    connect, cursor = get_db_cursor()
+
+    cursor.execute("DELETE FROM Passwords")
+    connect.commit()
+    connect.close()
+    return {"Message": "Wipe Completed"}

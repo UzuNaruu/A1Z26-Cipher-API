@@ -1,0 +1,85 @@
+<h1>Encode Machine</h1>
+<input type="text" id="boxE">
+<button onclick="encodePassword()">Encode</button>
+<p id="resultE">Result Will Be Shown Here...</p>
+
+<h2>Decode Machine</h2>
+<input type="text" id="boxD">
+<button onclick="decodePassword()">Decode</button>
+<p id="resultD">Result Will Be Shown Here...</p>
+
+<h3>Database History</h3>
+<button onclick="getHistory()">History</button>
+<p id="resultDB">History Will Be Shown Here</p>
+
+<h4>Database Wipe</h4>
+<button onclick="wipeDataBase()">Wipe Database</button>
+<p id="wipeDB">This Button Will Wipe All Database</p>
+
+
+<script>
+    async function encodePassword() {
+        try{
+            let word = document.getElementById("boxE").value;
+
+            let reply = await fetch("http://127.0.0.1:8000/encode/" + word);
+            let data = await reply.json();
+
+            document.getElementById("resultE").innerText = data;
+        }
+        catch{
+            document.getElementById("resultE").innerText = "Error: The Server Is Down";
+        }
+    }
+    
+    async function decodePassword() {
+        try{
+            let word = document.getElementById("boxD").value;
+        
+            let reply = await fetch("http://127.0.0.1:8000/decode/" + word);
+            let data = await reply.json();
+
+            document.getElementById("resultD").innerText = data;
+        }
+        catch{
+            document.getElementById("resultD").innerText = "Error: The Server Is Down";
+        }
+    }
+
+    async function getHistory() {
+        try{
+            let reply = await fetch("http://127.0.0.1:8000/history");
+            let data = await reply.json();
+            
+            let list = data["All Data"];
+
+            let cleanText = ""
+
+            for (let i = 0; i < list.length; i++){
+                let line = list[i];
+
+                let id = line[0];
+                let word = line[1];
+                let type = line[2];
+                let message = line[3];
+
+                cleanText += "Process " + id + ": " + word + "->" + type + "->" + message + "<br><br>";
+            }
+            document.getElementById("resultDB").innerHTML = cleanText
+        }
+        catch{
+            document.getElementById("resultDB").innerText = "Error: The Server Is Down"
+        }
+    }
+
+    async function wipeDataBase(){
+        try {
+            let reply = await fetch("http://127.0.0.1:8000/clear", {method: "DELETE"});
+            let data = await reply.json();
+            document.getElementById("wipeDB").innerText = data.Message
+        }
+        catch{
+            document.getElementById("wipeDB").innerText = "Error: The Server Is Down";
+        }
+    }
+</script>
