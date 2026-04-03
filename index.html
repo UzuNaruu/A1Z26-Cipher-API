@@ -22,7 +22,7 @@
         try{
             let word = document.getElementById("boxE").value;
 
-            let reply = await fetch("http://127.0.0.1:8000/encode/" + word);
+            let reply = await fetch("/encode/" + word);
             let data = await reply.json();
 
             document.getElementById("resultE").innerText = data;
@@ -36,7 +36,7 @@
         try{
             let word = document.getElementById("boxD").value;
         
-            let reply = await fetch("http://127.0.0.1:8000/decode/" + word);
+            let reply = await fetch("/decode/" + word);
             let data = await reply.json();
 
             document.getElementById("resultD").innerText = data;
@@ -48,7 +48,7 @@
 
     async function getHistory() {
         try{
-            let reply = await fetch("http://127.0.0.1:8000/history");
+            let reply = await fetch("/history");
             let data = await reply.json();
             
             let list = data["All Data"];
@@ -74,7 +74,7 @@
 
     async function wipeDataBase(){
         try {
-            let reply = await fetch("http://127.0.0.1:8000/clear", {method: "DELETE"});
+            let reply = await fetch("/clear", {method: "DELETE"});
             let data = await reply.json();
             document.getElementById("wipeDB").innerText = data.Message
         }
