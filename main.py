@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 import sqlite3
 
@@ -85,7 +85,9 @@ def get_history():
 
 
 @app.delete("/clear")
-def wipe_databse():
+def wipe_databse(x_hidden_password: str = Header(None)):
+    if x_hidden_password != "test123":
+        raise HTTPException(status_code=401, detail="Unauthorized access.")
     connect, cursor = get_db_cursor()
 
     cursor.execute("DELETE FROM Passwords")

@@ -13,6 +13,7 @@
 <p id="resultDB">History Will Be Shown Here</p>
 
 <h4>Database Wipe</h4>
+<input type ="text" id="boxW">
 <button onclick="wipeDataBase()">Wipe Database</button>
 <p id="wipeDB">This Button Will Wipe All Database</p>
 
@@ -74,7 +75,15 @@
 
     async function wipeDataBase(){
         try {
-            let reply = await fetch("/clear", {method: "DELETE"});
+            let entered_password = document.getElementById("boxW").value;
+            let reply = await fetch("/clear", {method: "DELETE",
+                headers: {"x-hidden-password": entered_password}
+            });
+            if(!reply.ok){
+                let errorData = await reply.json();
+                document.getElementById("wipeDB").innerText = "Error: " + errorData.detail;
+                return;
+            }
             let data = await reply.json();
             document.getElementById("wipeDB").innerText = data.Message
         }
