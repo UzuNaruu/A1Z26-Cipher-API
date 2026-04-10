@@ -1,17 +1,23 @@
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
-import sqlite3
+import psycopg2
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+SECRET_PASSWORD = os.getenv("VIP_PASSWORD")
 app = FastAPI()
 
 
 def get_db_cursor():
-    connect = sqlite3.connect("password_saves.db")
+    DB_URL = os.getenv("DB_URL")
+    connect = psycopg2.connect(DB_URL)
     cursor = connect.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS Passwords(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         original_message TEXT,
         type TEXT,
         result TEXT
@@ -41,7 +47,7 @@ def a1z26_encode(text: str):
         encoded_message += "-"
     encoded_message = encoded_message[:-1]
 
-    cursor.execute("INSERT INTO Passwords (original_message, type, result) VALUES (?,?,?)",
+    cursor.execute("INSERT INTO Passwords (original_message, type, result) VALUES (%s,%s,%s)",
                    (text, "encode", encoded_message))
 
     connect.commit()
@@ -66,7 +72,7 @@ def a1z26_decode(numbers: str):
         decoded_number = chr(number_decode)
         decoded_message += decoded_number
 
-    cursor.execute("INSERT INTO Passwords (original_message, type, result) VALUES (?,?,?)",
+    cursor.execute("INSERT INTO Passwords (original_message, type, result) VALUES (%s,%s,%s)",
                    (numbers, "decode", decoded_message))
 
     connect.commit()
@@ -86,7 +92,7 @@ def get_history():
 
 @app.delete("/clear")
 def wipe_databse(x_hidden_password: str = Header(None)):
-    if x_hidden_password != "test123":
+    if x_hidden_password != SECRET_PASSWORD:
         raise HTTPException(status_code=401, detail="Unauthorized access.")
     connect, cursor = get_db_cursor()
 
