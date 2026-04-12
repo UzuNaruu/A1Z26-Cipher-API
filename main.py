@@ -1,30 +1,9 @@
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
-import psycopg2
-import os
-from dotenv import load_dotenv
+from database import get_db_cursor, SECRET_PASSWORD
+from cipher import decode_a1z26, encode_a1z26
 
-load_dotenv()
-
-SECRET_PASSWORD = os.getenv("VIP_PASSWORD")
 app = FastAPI()
-
-
-def get_db_cursor():
-    DB_URL = os.getenv("DB_URL")
-    connect = psycopg2.connect(DB_URL)
-    cursor = connect.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS Passwords(
-        id SERIAL PRIMARY KEY,
-        original_message TEXT,
-        type TEXT,
-        result TEXT
-    )
-    """)
-    connect.commit()
-    return connect, cursor
 
 
 @app.get("/")
@@ -35,17 +14,11 @@ def main():
 @app.get("/encode/{text}")
 def a1z26_encode(text: str):
     connect, cursor = get_db_cursor()
+    encoded_message = encode_a1z26(text)
 
-    encoded_message = ""
-    up_message = text.upper()
-
-    for i in up_message:
-        if not i.isalpha():
-            return {"Error": "Wrong Format"}
-        letter_encode = ord(i) - 64
-        encoded_message += str(letter_encode)
-        encoded_message += "-"
-    encoded_message = encoded_message[:-1]
+    if type(encoded_message) == dict:
+        connect.close()
+        return encoded_message
 
     cursor.execute("INSERT INTO Passwords (original_message, type, result) VALUES (%s,%s,%s)",
                    (text, "encode", encoded_message))
@@ -60,17 +33,11 @@ def a1z26_encode(text: str):
 def a1z26_decode(numbers: str):
 
     connect, cursor = get_db_cursor()
+    decoded_message = decode_a1z26(numbers)
 
-    decoded_message = ""
-    clean_numbers = numbers.replace(" ", "-")
-    number_array = clean_numbers.split("-")
-
-    for i in number_array:
-        if not i.isdigit():
-            return {"Error": "Wrong Format"}
-        number_decode = int(i) + 64
-        decoded_number = chr(number_decode)
-        decoded_message += decoded_number
+    if type(decoded_message) == dict:
+        connect.close()
+        return decoded_message
 
     cursor.execute("INSERT INTO Passwords (original_message, type, result) VALUES (%s,%s,%s)",
                    (numbers, "decode", decoded_message))

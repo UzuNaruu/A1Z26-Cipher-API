@@ -26,7 +26,12 @@
             let reply = await fetch("/encode/" + word);
             let data = await reply.json();
 
-            document.getElementById("resultE").innerText = data;
+            if(data.Error){
+                document.getElementById("resultE").innerText = "Error: " + data.Error
+            }
+            else{
+                document.getElementById("resultE").innerText = data
+            }
         }
         catch{
             document.getElementById("resultE").innerText = "Error: The Server Is Down";
@@ -40,7 +45,12 @@
             let reply = await fetch("/decode/" + word);
             let data = await reply.json();
 
-            document.getElementById("resultD").innerText = data;
+            if (data.Error){
+                document.getElementById("resultD").innerText = "Error: " + data.Error
+            }
+            else{
+                document.getElementById("resultD").innerText = data;
+            }
         }
         catch{
             document.getElementById("resultD").innerText = "Error: The Server Is Down";
